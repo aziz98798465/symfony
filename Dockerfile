@@ -47,4 +47,4 @@ RUN chown -R www-data:www-data /var/www/html
 EXPOSE 80
 
 # Run migrations automatically then start Apache
-CMD php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground
+CMD sh -c "php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground"
