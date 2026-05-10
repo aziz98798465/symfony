@@ -43,11 +43,8 @@ RUN a2enconf symfony
 # Permissions
 RUN chown -R www-data:www-data /var/www/html
 
-# Create database tables automatically
-RUN php bin/console doctrine:migrations:migrate --no-interaction || true
-
-# Expose port
+# Expose Apache port
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Run migrations automatically then start Apache
+CMD php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground
