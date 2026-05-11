@@ -15,7 +15,7 @@ class UserStats
     private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'stats', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id_user', nullable: false)]
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', nullable: false)]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::INTEGER, options: ['default' => 0])]

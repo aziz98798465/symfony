@@ -32,12 +32,12 @@ class Appointment
     private ?string $status = 'pending';
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'idetudiant', referencedColumnName: 'id_user')]
+    #[ORM\JoinColumn(name: 'idetudiant', referencedColumnName: 'id')]
     #[Assert\NotNull(message: "L'étudiant est obligatoire.")]
     private ?User $etudiant = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'idpsy', referencedColumnName: 'id_user')]
+    #[ORM\JoinColumn(name: 'idpsy', referencedColumnName: 'id')]
     #[Assert\NotNull(message: "Le psychologue est obligatoire.")]
     private ?User $psychologue = null;
 
