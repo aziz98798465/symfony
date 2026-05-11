@@ -47,7 +47,7 @@ class Event
 
     
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id_user', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     /**
