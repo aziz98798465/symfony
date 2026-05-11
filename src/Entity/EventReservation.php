@@ -34,7 +34,7 @@ class EventReservation
     private ?Event $event = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id_user', nullable: false, onDelete: 'CASCADE')]
     #[Assert\NotNull(message: 'L\'utilisateur est obligatoire.')]
     private ?User $user = null;
 

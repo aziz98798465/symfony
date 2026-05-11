@@ -65,7 +65,7 @@ class SujetForum
 
   
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'id_user', referencedColumnName: 'id_user', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
     #[ORM\Column(name: 'image_url', type: 'string', length: 255, nullable: true)]
@@ -112,7 +112,7 @@ class SujetForum
     #[ORM\ManyToMany(targetEntity: User::class)]
     #[ORM\JoinTable(name: 'sujet_tagged_psychologue')]
     #[ORM\JoinColumn(name: 'id_sujet', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    #[ORM\InverseJoinColumn(name: 'id_psychologue', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'id_psychologue', referencedColumnName: 'id_user', onDelete: 'CASCADE')]
     private Collection $taggedPsychologues;
 
     public function __construct()
