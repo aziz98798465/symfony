@@ -47,4 +47,4 @@ RUN chmod -R 777 var
 EXPOSE 80
 
 # Start Symfony + run migrations automatically
-CMD php bin/console doctrine:migrations:migrate --no-interaction && apache2-foreground
+CMD sh -c "php bin/console doctrine:schema:update --force && apache2-foreground"
