@@ -1,6 +1,6 @@
 FROM php:8.2-apache
 
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -36,18 +36,21 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/sites-available/*.conf
 
-# Create cache/log folders
-RUN mkdir -p var/cache var/log
+# Create Symfony folders
+RUN mkdir -p \
+    var/cache \
+    var/log \
+    public/uploads
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 777 var
 
-# Clear Symfony cache
+RUN chmod -R 777 var
+RUN chmod -R 777 public/uploads
+
+# Clear cache
 RUN php bin/console cache:clear --env=prod || true
 
-# Expose port
 EXPOSE 80
 
-# Start Apache
-CMD php bin/console doctrine:schema:update --force --no-interaction || true && apache2-foreground
+CMD chmod -R 777 var && php bin/console doctrine:schema:update --force --no-interaction || true && apache2-foreground
