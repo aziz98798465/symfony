@@ -46,9 +46,17 @@ class AuthController extends AbstractController
     }
 
     // ---------------- REGISTER ----------------
-    #[Route('/register', name: 'app_register', methods: ['POST'])]
+    #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
     public function register(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher, MailerInterface $mailer): Response
     {
+        if ($request->isMethod('GET')) {
+            return $this->render('login/login.html.twig', [
+                'last_username' => '',
+                'error' => null,
+                'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'] ?? '',
+            ]);
+        }
+
         $firstName = $request->request->get('firstName');
         $lastName = $request->request->get('lastName');
         $email = $request->request->get('email');
