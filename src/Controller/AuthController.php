@@ -85,7 +85,7 @@ class AuthController extends AbstractController
         
         // User account not verified by default
         $user->setIsVerified(false);
-        
+
         // Generate unique verification token - simple format for URL compatibility
         $randomBytes = random_bytes(32);
         $verificationToken = bin2hex($randomBytes);
@@ -102,10 +102,10 @@ class AuthController extends AbstractController
             $verificationLink = $this->generateUrl('app_verify_email_link', [
                 'token' => $verificationToken
             ], UrlGeneratorInterface::ABSOLUTE_URL);
-            
+
             $mailer->send(
                 (new Email())
-                    ->from('no-reply@mindcare.tn')
+                    ->from($this->getMailerFrom())
                     ->to($user->getEmail())
                     ->subject('✉️ Verify Your Email - MindCare')
                     ->html($this->renderView('emails/verify_email.html.twig', [
@@ -121,6 +121,55 @@ class AuthController extends AbstractController
 
         $this->addFlash('success', 'Registration successful! A verification link has been sent to your email. Please click it to activate your account.');
         return $this->redirectToRoute('app_login');
+    }
+
+    // ---------------- RESEND VERIFICATION EMAIL ----------------
+    #[Route('/resend-verification', name: 'app_resend_verification', methods: ['GET', 'POST'])]
+    public function resendVerification(Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
+    {
+        if ($request->isMethod('POST')) {
+            $email = trim((string) $request->request->get('email', ''));
+            $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+
+            if ($user instanceof User && $user->isVerified()) {
+                $this->addFlash('success', 'This account is already verified. You can login.');
+
+                return $this->redirectToRoute('app_login');
+            }
+
+            if ($user instanceof User) {
+                $user->setVerificationToken(bin2hex(random_bytes(32)));
+                $em->flush();
+
+                try {
+                    $verificationLink = $this->generateUrl('app_verify_email_link', [
+                        'token' => $user->getVerificationToken(),
+                    ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+                    $mailer->send(
+                        (new Email())
+                            ->from($this->getMailerFrom())
+                            ->to($user->getEmail())
+                            ->subject('Verify Your Email - MindCare')
+                            ->html($this->renderView('emails/verify_email.html.twig', [
+                                'name' => $user->getFirstName() ?: 'User',
+                                'verificationLink' => $verificationLink,
+                            ]))
+                    );
+                } catch (\Exception $e) {
+                    error_log('Mailer Error: ' . $e->getMessage());
+                    $this->addFlash('error', 'Failed to send verification email. Please try again.');
+
+                    return $this->redirectToRoute('app_resend_verification');
+                }
+            }
+
+            $this->addFlash('success', 'If an unverified account exists with this email, a verification link has been sent.');
+
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('login/resend_verification.html.twig');
     }
 
     // ---------------- FORGOT PASSWORD (SEND CODE) ----------------
@@ -144,7 +193,7 @@ class AuthController extends AbstractController
                 try {
                     $mailer->send(
                         (new Email())
-                            ->from('no-reply@mindcare.tn')
+                            ->from($this->getMailerFrom())
                             ->to($user->getEmail())
                             ->subject('🔐 Your Password Reset Code - MindCare')
                             ->html($this->renderView('emails/reset_code.html.twig', [
@@ -338,7 +387,7 @@ class AuthController extends AbstractController
             try {
                 $mailer->send(
                     (new Email())
-                        ->from('no-reply@mindcare.tn')
+                        ->from($this->getMailerFrom())
                         ->to($user->getEmail())
                         ->subject('🔄 New Password Reset Code - MindCare')
                         ->html($this->renderView('emails/reset_code.html.twig', [
@@ -354,5 +403,14 @@ class AuthController extends AbstractController
         }
 
         return new JsonResponse(['error' => 'User not found'], 404);
+    }
+
+    private function getMailerFrom(): string
+    {
+        return $_ENV['MAILER_FROM_ADDRESS']
+            ?? $_SERVER['MAILER_FROM_ADDRESS']
+            ?? $_ENV['MAILER_FROM']
+            ?? $_SERVER['MAILER_FROM']
+            ?? 'no-reply@mindcare.tn';
     }
 }
