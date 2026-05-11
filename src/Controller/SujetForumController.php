@@ -105,29 +105,18 @@ class SujetForumController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $moderation = $moderationService->moderate($sujet->getDescription() ?? '');
-            $errorType = $moderation['errorType'] ?? null;
-            $errorMessage = $moderation['errorMessage'] ?? null;
-            $detailSuffix = is_string($errorMessage) && $errorMessage !== '' ? ' Detail: ' . $errorMessage . '.' : '';
 
-            if (!$moderation['enabled']) {
-                $form->addError(new FormError('Moderation OpenAI non configuree. Ajoutez OPENAI_API_KEY dans .env.local.'));
-            } elseif (!$moderation['checked']) {
-                if ($errorType === 'rate_limit') {
-                    $form->addError(new FormError('OpenAI refuse la verification (429). Verifiez votre quota/facturation et les limites du projet sur platform.openai.com, puis reessayez.' . $detailSuffix));
-                } elseif ($errorType === 'auth') {
-                    $form->addError(new FormError('Cle OpenAI invalide ou sans droits. Verifiez OPENAI_API_KEY dans .env.local.' . $detailSuffix));
-                } elseif ($errorType === 'provider') {
-                    $form->addError(new FormError('Service OpenAI indisponible temporairement. Reessayez plus tard.' . $detailSuffix));
-                } else {
-                    $form->addError(new FormError('Impossible de verifier le commentaire avec OpenAI pour le moment. Reessayez plus tard.' . $detailSuffix));
-                }
-            } elseif ($moderation['flagged']) {
+            if ($moderation['checked'] && $moderation['flagged']) {
                 $categories = $moderation['categories'] ?? [];
                 $details = $categories !== [] ? ' Categories detectees: ' . implode(', ', $categories) . '.' : '';
 
                 $form->get('description')->addError(new FormError('Commentaire refuse: contenu toxique ou spam detecte.' . $details));
                 $this->addFlash('danger', 'Commentaire refuse: contenu toxique ou spam detecte.');
             } else {
+                if (!$moderation['checked']) {
+                    $this->addFlash('warning', 'Moderation automatique indisponible temporairement; le sujet a ete enregistre.');
+                }
+
                 $this->handleSujetUploads($form, $sujet);
                 $entityManager->persist($sujet);
                 $entityManager->flush();
@@ -178,29 +167,18 @@ class SujetForumController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $moderation = $moderationService->moderate($sujet->getDescription() ?? '');
-            $errorType = $moderation['errorType'] ?? null;
-            $errorMessage = $moderation['errorMessage'] ?? null;
-            $detailSuffix = is_string($errorMessage) && $errorMessage !== '' ? ' Detail: ' . $errorMessage . '.' : '';
 
-            if (!$moderation['enabled']) {
-                $form->addError(new FormError('Moderation OpenAI non configuree. Ajoutez OPENAI_API_KEY dans .env.local.'));
-            } elseif (!$moderation['checked']) {
-                if ($errorType === 'rate_limit') {
-                    $form->addError(new FormError('OpenAI refuse la verification (429). Verifiez votre quota/facturation et les limites du projet sur platform.openai.com, puis reessayez.' . $detailSuffix));
-                } elseif ($errorType === 'auth') {
-                    $form->addError(new FormError('Cle OpenAI invalide ou sans droits. Verifiez OPENAI_API_KEY dans .env.local.' . $detailSuffix));
-                } elseif ($errorType === 'provider') {
-                    $form->addError(new FormError('Service OpenAI indisponible temporairement. Reessayez plus tard.' . $detailSuffix));
-                } else {
-                    $form->addError(new FormError('Impossible de verifier le commentaire avec OpenAI pour le moment. Reessayez plus tard.' . $detailSuffix));
-                }
-            } elseif ($moderation['flagged']) {
+            if ($moderation['checked'] && $moderation['flagged']) {
                 $categories = $moderation['categories'] ?? [];
                 $details = $categories !== [] ? ' Categories detectees: ' . implode(', ', $categories) . '.' : '';
 
                 $form->get('description')->addError(new FormError('Commentaire refuse: contenu toxique ou spam detecte.' . $details));
                 $this->addFlash('danger', 'Commentaire refuse: contenu toxique ou spam detecte.');
             } else {
+                if (!$moderation['checked']) {
+                    $this->addFlash('warning', 'Moderation automatique indisponible temporairement; le sujet a ete enregistre.');
+                }
+
                 $this->handleSujetUploads($form, $sujet);
                 $entityManager->flush();
 

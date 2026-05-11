@@ -172,9 +172,11 @@ class FrontForumController extends AbstractController
                 $details = $categories !== [] ? ' Categories detectees: ' . implode(', ', $categories) . '.' : '';
                 $form->get('description')->addError(new FormError('Commentaire refuse: contenu toxique ou spam detecte.' . $details));
                 $this->addFlash('danger', 'Commentaire refuse: contenu toxique ou spam detecte.');
-            } elseif (!$moderation['checked']) {
-                $form->addError(new FormError('Impossible de verifier le commentaire avec OpenAI pour le moment. Reessayez plus tard.'));
             } else {
+                if (!$moderation['checked']) {
+                    $this->addFlash('warning', 'Moderation automatique indisponible temporairement; le sujet a ete publie.');
+                }
+
                 $this->handleSujetUploads($form, $sujet);
                 $entityManager->persist($sujet);
                 $entityManager->flush();
