@@ -19,7 +19,7 @@ class PatientFile
     private ?int $id = null;
 
     #[ORM\OneToOne(inversedBy: 'patientFile', targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'student_id', referencedColumnName: 'id_user', nullable: false)]
+    #[ORM\JoinColumn(nullable: false)]
     private ?User $student = null;
 
     // Student-managed fields

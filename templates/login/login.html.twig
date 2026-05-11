@@ -43,10 +43,6 @@
                     <input type="password" name="password" placeholder="Password" required>
                 </div>
 
-                <div class="field">
-                    <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
-                </div>
-
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                 {# LOGIN BUTTON - Full width #}
@@ -110,7 +106,6 @@
     </div>
 </div>
 
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const toggleBtn = document.getElementById('faceLoginToggle');

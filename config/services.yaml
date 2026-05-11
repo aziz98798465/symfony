@@ -25,11 +25,6 @@ services:
             - '../src/Kernel.php'
 
     # Explicit service configuration
-    App\EventListener\LoginCaptchaListener:
-        arguments:
-            $recaptchaSecret: '%env(RECAPTCHA_SECRET_KEY)%'
-        tags:
-            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest, priority: 10 }
     App\Service\ZoomApiService:
         arguments:
             $httpClient: '@http_client'

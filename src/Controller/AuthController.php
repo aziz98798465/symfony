@@ -35,7 +35,6 @@ class AuthController extends AbstractController
         return $this->render('login/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
-            'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'] ?? '',
         ]);
     }
 
@@ -53,7 +52,6 @@ class AuthController extends AbstractController
             return $this->render('login/login.html.twig', [
                 'last_username' => '',
                 'error' => null,
-                'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'] ?? '',
             ]);
         }
 
@@ -174,9 +172,7 @@ class AuthController extends AbstractController
             return $this->redirectToRoute('app_forgot_password');
         }
 
-        return $this->render('login/send_code.html.twig', [
-            'recaptcha_site_key' => $_ENV['RECAPTCHA_SITE_KEY'] ?? ''
-        ]);
+        return $this->render('login/send_code.html.twig');
     }
 
     // ---------------- VERIFY CODE ----------------
