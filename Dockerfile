@@ -5,9 +5,15 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
+    curl \
     libpq-dev \
     libicu-dev \
-    && docker-php-ext-install pdo pdo_pgsql intl
+    libzip-dev \
+    && docker-php-ext-install \
+        pdo \
+        pdo_pgsql \
+        intl \
+        zip
 
 # Enable Apache rewrite
 RUN a2enmod rewrite
@@ -22,25 +28,26 @@ WORKDIR /var/www/html
 COPY . .
 
 # Install Symfony dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Apache config
+# Apache public folder
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/sites-available/*.conf
 
-# Create Symfony folders
+# Create cache/log folders
 RUN mkdir -p var/cache var/log
 
 # Permissions
 RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 775 var
-RUN chmod -R 775 public
+RUN chmod -R 777 var
 
-# Use www-data user
-USER www-data
+# Clear Symfony cache
+RUN php bin/console cache:clear --env=prod || true
 
+# Expose port
 EXPOSE 80
 
-CMD php bin/console doctrine:schema:update --force && apache2-foreground
+# Start Apache
+CMD php bin/console doctrine:schema:update --force --no-interaction || true && apache2-foreground
