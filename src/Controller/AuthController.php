@@ -123,55 +123,6 @@ class AuthController extends AbstractController
         return $this->redirectToRoute('app_login');
     }
 
-    // ---------------- RESEND VERIFICATION EMAIL ----------------
-    #[Route('/resend-verification', name: 'app_resend_verification', methods: ['GET', 'POST'])]
-    public function resendVerification(Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
-    {
-        if ($request->isMethod('POST')) {
-            $email = trim((string) $request->request->get('email', ''));
-            $user = $em->getRepository(User::class)->findOneBy(['email' => $email]);
-
-            if ($user instanceof User && $user->isVerified()) {
-                $this->addFlash('success', 'This account is already verified. You can login.');
-
-                return $this->redirectToRoute('app_login');
-            }
-
-            if ($user instanceof User) {
-                $user->setVerificationToken(bin2hex(random_bytes(32)));
-                $em->flush();
-
-                try {
-                    $verificationLink = $this->generateUrl('app_verify_email_link', [
-                        'token' => $user->getVerificationToken(),
-                    ], UrlGeneratorInterface::ABSOLUTE_URL);
-
-                    $mailer->send(
-                        (new Email())
-                            ->from($this->getMailerFrom())
-                            ->to($user->getEmail())
-                            ->subject('Verify Your Email - MindCare')
-                            ->html($this->renderView('emails/verify_email.html.twig', [
-                                'name' => $user->getFirstName() ?: 'User',
-                                'verificationLink' => $verificationLink,
-                            ]))
-                    );
-                } catch (\Exception $e) {
-                    error_log('Mailer Error: ' . $e->getMessage());
-                    $this->addFlash('error', 'Failed to send verification email. Please try again.');
-
-                    return $this->redirectToRoute('app_resend_verification');
-                }
-            }
-
-            $this->addFlash('success', 'If an unverified account exists with this email, a verification link has been sent.');
-
-            return $this->redirectToRoute('app_login');
-        }
-
-        return $this->render('login/resend_verification.html.twig');
-    }
-
     // ---------------- FORGOT PASSWORD (SEND CODE) ----------------
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['GET', 'POST'])]
     public function forgotPassword(Request $request, EntityManagerInterface $em, MailerInterface $mailer): Response
