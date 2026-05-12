@@ -115,8 +115,6 @@ class AuthController extends AbstractController
             );
         } catch (\Exception $e) {
             error_log('Mailer Error: ' . $e->getMessage());
-            $em->remove($user);
-            $em->flush();
             $this->addFlash('error', 'Failed to send verification email. Please try again.');
             return $this->redirectToRoute('app_login');
         }
