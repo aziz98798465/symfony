@@ -10,6 +10,7 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             string $groqApiKey: '%env(string:GROQ_API_KEY)%'
+            string $resendApiKey: '%env(string:RESEND_API_KEY)%'
             string $hfApiToken: '%env(string:HF_API_TOKEN)%'
             string $huggingFaceApiToken: '%env(string:HF_API_TOKEN)%'
             bool $localCommentFilterEnabled: '%env(bool:LOCAL_COMMENT_FILTER_ENABLED)%'

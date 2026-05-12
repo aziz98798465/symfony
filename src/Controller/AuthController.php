@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Service\ResendMailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,7 +47,7 @@ class AuthController extends AbstractController
 
     // ---------------- REGISTER ----------------
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
-    public function register(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher, MailerInterface $mailer): Response
+    public function register(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher, ResendMailerService $resendMailer): Response
     {
         if ($request->isMethod('GET')) {
             return $this->render('login/login.html.twig', [
@@ -103,15 +104,14 @@ class AuthController extends AbstractController
                 'token' => $verificationToken
             ], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $mailer->send(
-                (new Email())
-                    ->from($this->getMailerFrom())
-                    ->to($user->getEmail())
-                    ->subject('✉️ Verify Your Email - MindCare')
-                    ->html($this->renderView('emails/verify_email.html.twig', [
-                        'name' => $user->getFirstName() ?: 'User',
-                        'verificationLink' => $verificationLink
-                    ]))
+            $resendMailer->send(
+                $this->getMailerFrom(),
+                $user->getEmail(),
+                'Verify Your Email - MindCare',
+                $this->renderView('emails/verify_email.html.twig', [
+                    'name' => $user->getFirstName() ?: 'User',
+                    'verificationLink' => $verificationLink
+                ])
             );
         } catch (\Exception $e) {
             error_log('Mailer Error: ' . $e->getMessage());
